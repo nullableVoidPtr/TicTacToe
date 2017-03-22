@@ -10,11 +10,13 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.0.2";
+game.version = "1.1.0";
 game.board = {};
-for (var z = 0; z < 1; z++) {
+game.board.z = 3;
+game.board.a = 3;
+for (var z = 0; z < game.board.z; z++) {
 	game.board[z] = {};
-	for (var a = 0; a < 1; a++) {
+	for (var a = 0; a < game.board.a; a++) {
 		game.board[z][a] = {};
 		game.board[z][a].data = {};
 		game.board[z][a].data.locations = {};
@@ -45,11 +47,10 @@ onload = function () {
 	//Document Load Trigger
 	
 	//Create Board
-	for (var a = 0; a < 1; a++) {
-		for (var z = 0; z < 1; z++) {
-			document.getElementById("board").innerHTML += "<div id=\"board" + a + "_" + z + "\"></div>";
+	for (var a = 0; a < game.board.a; a++) {
+		for (var z = 0; z < game.board.z; z++) {
+			document.getElementById("board").innerHTML += "<div id=\"board" + a + "_" + z + "\" style=\"display: inline-block;\"></div>";
 			var board = "document.getElementById('board" + a + "_" + z + "')";
-			eval(board + ".innerHTML = ''");
 			
 			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_0\">______</span>_'");
 			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_1\">______</span>_'");
@@ -70,11 +71,12 @@ onload = function () {
 				eval(board + ".innerHTML += '<br>'");
 			}
 		}
+		document.getElementById("board").innerHTML += "<br>";
 	}
 	
 	//Load eventListener
-	for (var a = 0; a < 1; a++) {
-		for (var z = 0; z < 1; z++) {
+	for (var a = 0; a < game.board.a; a++) {
+		for (var z = 0; z < game.board.z; z++) {
 			for (var y = 0; y < 3; y++) {
 				for (var x = 0; x < 3; x++) {
 					for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
@@ -155,5 +157,5 @@ function updateWinner(z, a) {
 	
 	game.board[z][a].data.winner = win;
 	if (!!win)
-		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won!");
+		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (parseInt(z*a) + parseInt(z)) + "!");
 }
