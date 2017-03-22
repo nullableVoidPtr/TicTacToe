@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.0";
+game.version = "1.1.1";
 game.board = {};
 game.board.z = 3;
 game.board.a = 3;
@@ -31,6 +31,7 @@ for (var z = 0; z < game.board.z; z++) {
 }
 game.active = {};
 game.active.symbol = 'x';
+game.active.board = Math.floor(game.board.a / 2) * game.board.z + Math.floor(game.board.z / 2) - 1;
 game.active.toggle = function () {
 	if (this.symbol.toLowerCase() == 'x')
 		this.symbol = 'o';
@@ -97,6 +98,8 @@ onload = function () {
  * value - The value to change the box to: 'x', 'X', 'o', 'O'
  */
 function updateInner(x, y, z, a, value) {
+	if (Math.floor((parseInt(a) + 1) / 2) * (parseInt(z) + 1) + Math.floor((parseInt(z) + 1) / 2) != game.active.board)
+		return false;
 	if (!(value.toLowerCase() == 'x' || value.toLowerCase() == 'o'))
 		return false;
 	for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
