@@ -42,7 +42,7 @@ onload = function () {
 };
 
 /*
- * function updateInner
+ * void updateInner(x, y, z, a, value)
  * x - The x location of the box
  * y - The y location of the box
  * z - The z location of the box
@@ -59,46 +59,53 @@ function updateInner(x, y, z, a, value) {
 }
 
 /*
- * function updateWinner
+ * bool same(a, b, ...)
+ * a - First value to compare
+ * b - Second value to compare
+ * ... - ...
+ * return - If all the values are identical
+ * 
+ * NB: Values are converted to lowercase before being compared
+ */
+function same(a, b) {
+	if (arguments.length < 2)
+		return arguments.length == 1;
+	for (var i = 1; i < arguments.length; i++)
+		if (arguments[0].toLowerCase() != arguments[i].toLowerCase() || arguments[i] == '')
+			return false;
+	return true;
+}
+
+/*
+ * void updateWinner(z, a)
  * z - The z location of the board
  * a - The a location of the board
  */
 function updateWinner(z, a) {
 	var board = game.board[z][a].data.locations, win = '';
-	if (board[0][0].toLowerCase() != '') {
-		if (
-			board[0][0].toLowerCase() == board[0][1].toLowerCase() == board[0][2].toLowerCase() ||
-			board[0][0].toLowerCase() == board[1][1].toLowerCase() == board[2][2].toLowerCase() ||
-			board[0][0].toLowerCase() == board[1][0].toLowerCase() == board[2][0].toLowerCase()
-		) {
-			win = board[0][0].toLowerCase();
-		}
-	} if (board[1][0].toLowerCase() != '') {
-		if (
-			board[1][0].toLowerCase() == board[1][1].toLowerCase() == board[1][2].toLowerCase()
-		) {
-			win = board[1][0].toLowerCase();
-		}
-	} if (board[2][0].toLowerCase() != '') {
-		if (
-			board[2][0].toLowerCase() == board[1][1].toLowerCase() == board[0][2].toLowerCase() ||
-			board[2][0].toLowerCase() == board[2][1].toLowerCase() == board[2][2].toLowerCase()
-		) {
-			win = board[2][0].toLowerCase();
-		}
-	} if (board[2][1].toLowerCase() != '') {
-		if (
-			board[2][1].toLowerCase() == board[1][1].toLowerCase() == board[0][1].toLowerCase()
-		) {
-			win = board[2][1].toLowerCase();
-		}
-	} if (board[2][2].toLowerCase() != '') {
-		if (
-			board[2][2].toLowerCase() == board[1][2].toLowerCase() == board[0][2].toLowerCase()
-		) {
-			win = board[2][2].toLowerCase();
-		}
-	}
+	
+	//Vertical
+	if (same(board[0][0], board[0][1], board[0][2]))
+		win = board[0][0].toLowerCase();
+	else if (same(board[1][0], board[1][1], board[1][2]))
+		win = board[1][0].toLowerCase();
+	else if (same(board[2][0], board[2][1], board[2][2]))
+		win = board[2][0].toLowerCase();
+	
+	//Horizontal
+	else if (same(board[0][0], board[1][0], board[2][0]))
+		win = board[0][0].toLowerCase();
+	else if (same(board[0][1], board[1][1], board[2][1]))
+		win = board[0][1].toLowerCase();
+	else if (same(board[0][2], board[1][2], board[2][2]))
+		win = board[0][2].toLowerCase();
+	
+	//Diagonal
+	else if (same(board[0][0], board[1][1], board[2][2]))
+		win = board[0][0].toLowerCase();
+	else if (same(board[2][0], board[1][1], board[0][2]))
+		win = board[2][0].toLowerCase();
+	
 	game.board[z][a].data.winner = win;
 }
 
