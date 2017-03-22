@@ -20,7 +20,6 @@ for (var z = 0; z < game.board.z; z++) {
 	for (var a = 0; a < game.board.a; a++) {
 		game.board[z][a] = {};
 		game.board[z][a].data = {};
-		game.board[z][a].data.full = false;
 		game.board[z][a].data.locations = {};
 		for (var x = 0; x < 3; x++) {
 			game.board[z][a].data.locations[x] = {};
@@ -100,7 +99,7 @@ onload = function () {
  * value - The value to change the box to: 'x', 'X', 'o', 'O'
  */
 function updateInner(x, y, z, a, value) {
-	if (game.board[z][a].data.full)
+	if (!!game.board[z][a].data.winner)
 		return false;
 	if (game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*')
 		return false;
@@ -113,16 +112,8 @@ function updateInner(x, y, z, a, value) {
 	}
 	
 	game.active.board = 3 * parseInt(y) + parseInt(x);
-	
-	var full = true;
-	for (var x = 0; x < 3 && full; x++)
-		for (var y = 0; y < 3 && full; y++)
-			if (!(game.board[z][a].data.locations[x][y].toLowerCase() == 'x' || game.board[z][a].data.locations[x][y].toLowerCase() == 'o'))
-				full = false;
-	if (full) {
-		game.board[z][a].data.full = true;
+	if (!!game.board[x][y].data.winner)
 		game.active.board = '*';
-	}
 }
 
 /*
@@ -177,7 +168,7 @@ function updateWinner(z, a) {
 	
 	game.board[z][a].data.winner = win;
 	if (!!win)
-		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (parseInt(z*a) + parseInt(z)) + "!");
+		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (game.board.z * parseInt(a) + parseInt(z)) + "!");
 }
 
 /*
