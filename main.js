@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.0.1";
+game.version = "1.0.2";
 game.board = {};
 for (var z = 0; z < 1; z++) {
 	game.board[z] = {};
@@ -43,6 +43,36 @@ valueArr.o = ["______", "  __  ", " |  | ", " |__| ", "______"];
 
 onload = function () {
 	//Document Load Trigger
+	
+	//Create Board
+	for (var a = 0; a < 1; a++) {
+		for (var z = 0; z < 1; z++) {
+			document.getElementById("board").innerHTML += "<div id=\"board" + a + "_" + z + "\"></div>";
+			var board = "document.getElementById('board" + a + "_" + z + "')";
+			eval(board + ".innerHTML = ''");
+			
+			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_0\">______</span>_'");
+			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_1\">______</span>_'");
+			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_2\">______</span><br>'");
+			
+			for (var o = 0; o < 3; o++) {
+				for (var i = 0; i < 3; i++) {
+					eval(board + ".innerHTML += '|'");
+					for (var n = 0; n < 3; n++) {
+						eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_" + o + "_" + n + "\">      </span>|'");
+					}
+					eval(board + ".innerHTML += '<br>'");
+				}
+				eval(board + ".innerHTML += '|'");
+				for (var n = 0; n < 3; n++) {
+					eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_" + (o > 1 ? 2 : o + 1) + "_" + n + "\">______</span>|'");
+				}
+				eval(board + ".innerHTML += '<br>'");
+			}
+		}
+	}
+	
+	//Load eventListener
 	for (var a = 0; a < 1; a++) {
 		for (var z = 0; z < 1; z++) {
 			for (var y = 0; y < 3; y++) {
@@ -124,4 +154,6 @@ function updateWinner(z, a) {
 		win = board[2][0].toLowerCase();
 	
 	game.board[z][a].data.winner = win;
+	if (!!win)
+		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won!");
 }
