@@ -10,7 +10,8 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.2";
+game.version = "1.1.3";
+game.winner = "";
 game.board = {};
 game.board.z = 3;
 game.board.a = 3;
@@ -82,7 +83,7 @@ onload = function () {
 			for (var y = 0; y < 3; y++) {
 				for (var x = 0; x < 3; x++) {
 					for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
-						buttons[i].addEventListener("click", function(){updateInner(this.className.charAt(17), this.className.charAt(15), this.className.charAt(13), this.className.charAt(11), game.active.symbol); game.active.toggle(); updateWinner(this.className.charAt(13), this.className.charAt(11));});
+						buttons[i].addEventListener("click", function(){buttonOnClick(this);});
 					}
 				}
 			}
@@ -177,4 +178,51 @@ function updateWinner(z, a) {
 	game.board[z][a].data.winner = win;
 	if (!!win)
 		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (parseInt(z*a) + parseInt(z)) + "!");
+}
+
+/*
+ * void updateWinnerEntire()
+ */
+function updateWinnerEntire() {
+	if (!!game.winner)
+		return false;
+	var board = game.board, win = '';
+	
+	//Vertical
+	if (same(board[0][0].data.winner, board[0][1].data.winner, board[0][2].data.winner))
+		win = board[0][0].data.winner;
+	else if (same(board[1][0].data.winner, board[1][1].data.winner, board[1][2].data.winner))
+		win = board[1][0].data.winner;
+	else if (same(board[2][0].data.winner, board[2][1].data.winner, board[2][2].data.winner))
+		win = board[2][0].data.winner;
+	
+	//Horizontal
+	else if (same(board[0][0].data.winner, board[1][0].data.winner, board[2][0].data.winner))
+		win = board[0][0].data.winner;
+	else if (same(board[0][1].data.winner, board[1][1].data.winner, board[2][1].data.winner))
+		win = board[0][1].data.winner;
+	else if (same(board[0][2].data.winner, board[1][2].data.winner, board[2][2].data.winner))
+		win = board[0][2].data.winner;
+	
+	//Diagonal
+	else if (same(board[0][0].data.winner, board[1][1].data.winner, board[2][2].data.winner))
+		win = board[0][0].data.winner;
+	else if (same(board[2][0].data.winner, board[1][1].data.winner, board[0][2].data.winner))
+		win = board[2][0].data.winner;
+	
+	win = win.toLowerCase();
+	game.winner = win;
+	if (!!win)
+		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won the game!");
+}
+
+/*
+ * void buttonOnClick(e)
+ * e - The span element this is executed from ('this')
+ */
+function buttonOnClick(e) {
+	updateInner(e.className.charAt(17), e.className.charAt(15), e.className.charAt(13), e.className.charAt(11), game.active.symbol);
+	game.active.toggle();
+	updateWinner(e.className.charAt(13), e.className.charAt(11));
+	updateWinnerEntire();
 }
