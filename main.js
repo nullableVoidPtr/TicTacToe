@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.6";
+game.version = "1.1.7";
 game.winner = "";
 game.board = {};
 game.board.z = 3;
@@ -110,7 +110,13 @@ function updateInner(x, y, z, a, value) {
 		buttons[i].innerHTML = valueArr[value.toLowerCase()][i];
 		game.board[z][a].data.locations[x][y] = value.toLowerCase();
 	}
-	
+	updateActive(x, y);
+}
+
+/*
+ * void updateActive
+ */
+function updateActive(x, y) {
 	game.active.board = 3 * parseInt(y) + parseInt(x);
 	if (!!game.board[x][y].data.winner)
 		game.active.board = '*';
@@ -232,5 +238,6 @@ function buttonOnClick(e) {
 	game.active.toggle();
 	updateWinner(e.className.charAt(13), e.className.charAt(11));
 	updateWinnerEntire();
+	updateActive(e.className.charAt(17), e.className.charAt(15));
 	updateColourEntire();
 }
