@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.8";
+game.version = "1.1.9";
 game.winner = "";
 game.board = {};
 game.board.z = 3;
@@ -88,6 +88,8 @@ onload = function () {
 			}
 		}
 	}
+	
+	updateColourEntire();
 };
 
 /*
