@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.3";
+game.version = "1.1.9";
 game.winner = "";
 game.board = {};
 game.board.z = 3;
@@ -20,7 +20,6 @@ for (var z = 0; z < game.board.z; z++) {
 	for (var a = 0; a < game.board.a; a++) {
 		game.board[z][a] = {};
 		game.board[z][a].data = {};
-		game.board[z][a].data.full = false;
 		game.board[z][a].data.locations = {};
 		for (var x = 0; x < 3; x++) {
 			game.board[z][a].data.locations[x] = {};
@@ -89,6 +88,8 @@ onload = function () {
 			}
 		}
 	}
+	
+	updateColourEntire();
 };
 
 /*
@@ -100,29 +101,29 @@ onload = function () {
  * value - The value to change the box to: 'x', 'X', 'o', 'O'
  */
 function updateInner(x, y, z, a, value) {
-	if (game.board[z][a].data.full)
+	if (!!game.board[z][a].data.winner)
 		return false;
 	if (game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*')
 		return false;
 	if (!(value.toLowerCase() == 'x' || value.toLowerCase() == 'o'))
 		return false;
+	if (game.board[z][a].data.locations[x][y] != '')
+			return false;
 	
+	game.board[z][a].data.locations[x][y] = value.toLowerCase();
 	for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
 		buttons[i].innerHTML = valueArr[value.toLowerCase()][i];
-		game.board[z][a].data.locations[x][y] = value.toLowerCase();
 	}
-	
+	updateActive(x, y);
+}
+
+/*
+ * void updateActive
+ */
+function updateActive(x, y) {
 	game.active.board = 3 * parseInt(y) + parseInt(x);
-	
-	var full = true;
-	for (var x = 0; x < 3 && full; x++)
-		for (var y = 0; y < 3 && full; y++)
-			if (!(game.board[z][a].data.locations[x][y].toLowerCase() == 'x' || game.board[z][a].data.locations[x][y].toLowerCase() == 'o'))
-				full = false;
-	if (full) {
-		game.board[z][a].data.full = true;
+	if (!!game.board[x][y].data.winner)
 		game.active.board = '*';
-	}
 }
 
 /*
@@ -176,8 +177,10 @@ function updateWinner(z, a) {
 		win = board[2][0].toLowerCase();
 	
 	game.board[z][a].data.winner = win;
-	if (!!win)
-		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (parseInt(z*a) + parseInt(z)) + "!");
+	if (!!win) {
+		document.getElementById("board" + a + "_" + z).innerHTML = win == 'x' ? "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|" : (win == 'o' ? "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|" : document.getElementById("board" + a + "_" + z).innerHTML);
+		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (game.board.z * parseInt(a) + parseInt(z)) + "!");
+	}
 }
 
 /*
@@ -217,6 +220,20 @@ function updateWinnerEntire() {
 }
 
 /*
+ * void updateColourEntire()
+ */
+function updateColourEntire() {
+	for (var z = 0; z < game.board.z; z++) {
+		for (var a = 0; a < game.board.a; a++) {
+			if (game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*')
+				document.getElementById("board" + a + "_" + z).style.color = "#B0B0B0";
+			else if (game.board.z * parseInt(a) + parseInt(z) == game.active.board || game.board == '*')
+				document.getElementById("board" + a + "_" + z).style.color = "#000000";
+		}
+	}
+}
+
+/*
  * void buttonOnClick(e)
  * e - The span element this is executed from ('this')
  */
@@ -225,4 +242,6 @@ function buttonOnClick(e) {
 	game.active.toggle();
 	updateWinner(e.className.charAt(13), e.className.charAt(11));
 	updateWinnerEntire();
+	updateActive(e.className.charAt(17), e.className.charAt(15));
+	updateColourEntire();
 }
