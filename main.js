@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.5";
+game.version = "1.1.6";
 game.winner = "";
 game.board = {};
 game.board.z = 3;
@@ -168,7 +168,7 @@ function updateWinner(z, a) {
 	
 	game.board[z][a].data.winner = win;
 	if (!!win) {
-		document.getElementById("board" + a + "_" + z).innerHTML = win == 'x' ? "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|" : (win == 'y' ? "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|" : document.getElementById("board" + a + "_" + z).innerHTML);
+		document.getElementById("board" + a + "_" + z).innerHTML = win == 'x' ? "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|" : (win == 'o' ? "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|" : document.getElementById("board" + a + "_" + z).innerHTML);
 		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (game.board.z * parseInt(a) + parseInt(z)) + "!");
 	}
 }
@@ -210,6 +210,20 @@ function updateWinnerEntire() {
 }
 
 /*
+ * void updateColourEntire()
+ */
+function updateColourEntire() {
+	for (var z = 0; z < game.board.z; z++) {
+		for (var a = 0; a < game.board.a; a++) {
+			if (game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*')
+				document.getElementById("board" + a + "_" + z).style.color = "#B0B0B0";
+			else if (game.board.z * parseInt(a) + parseInt(z) == game.active.board || game.board == '*')
+				document.getElementById("board" + a + "_" + z).style.color = "#000000";
+		}
+	}
+}
+
+/*
  * void buttonOnClick(e)
  * e - The span element this is executed from ('this')
  */
@@ -218,4 +232,5 @@ function buttonOnClick(e) {
 	game.active.toggle();
 	updateWinner(e.className.charAt(13), e.className.charAt(11));
 	updateWinnerEntire();
+	updateColourEntire();
 }
