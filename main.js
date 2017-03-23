@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.7";
+game.version = "1.1.8";
 game.winner = "";
 game.board = {};
 game.board.z = 3;
@@ -105,10 +105,12 @@ function updateInner(x, y, z, a, value) {
 		return false;
 	if (!(value.toLowerCase() == 'x' || value.toLowerCase() == 'o'))
 		return false;
+	if (game.board[z][a].data.locations[x][y] != '')
+			return false;
 	
+	game.board[z][a].data.locations[x][y] = value.toLowerCase();
 	for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
 		buttons[i].innerHTML = valueArr[value.toLowerCase()][i];
-		game.board[z][a].data.locations[x][y] = value.toLowerCase();
 	}
 	updateActive(x, y);
 }
