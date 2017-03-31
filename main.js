@@ -10,7 +10,7 @@
  * Contains all data for the game
  */
 game = {};
-game.version = "1.1.9";
+game.version = "1.2.0";
 game.winner = "";
 game.board = {};
 game.board.z = 3;
@@ -89,7 +89,11 @@ onload = function () {
 		}
 	}
 	
+	//Update active board colour
 	updateColourEntire();
+	
+	//Add version tag
+	document.getElementById("version").innerHTML = "v" + game.version;
 };
 
 /*
@@ -225,9 +229,9 @@ function updateWinnerEntire() {
 function updateColourEntire() {
 	for (var z = 0; z < game.board.z; z++) {
 		for (var a = 0; a < game.board.a; a++) {
-			if (game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*')
+			if ((game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*') || (game.active.board == '*' && !!game.board[z][a].data.winner))
 				document.getElementById("board" + a + "_" + z).style.color = "#B0B0B0";
-			else if (game.board.z * parseInt(a) + parseInt(z) == game.active.board || game.board == '*')
+			else if (game.board.z * parseInt(a) + parseInt(z) == game.active.board || game.active.board == '*')
 				document.getElementById("board" + a + "_" + z).style.color = "#000000";
 		}
 	}
@@ -238,10 +242,13 @@ function updateColourEntire() {
  * e - The span element this is executed from ('this')
  */
 function buttonOnClick(e) {
+	if (game.board.z * parseInt(e.className.charAt(11)) + parseInt(e.className.charAt(13)) != game.active.board && game.active.board != '*')
+		return false;
 	updateInner(e.className.charAt(17), e.className.charAt(15), e.className.charAt(13), e.className.charAt(11), game.active.symbol);
 	game.active.toggle();
 	updateWinner(e.className.charAt(13), e.className.charAt(11));
 	updateWinnerEntire();
-	updateActive(e.className.charAt(17), e.className.charAt(15));
+	if (!((!!game.board[e.className.charAt(13)][e.className.charAt(11)].data.winner) && (game.board.z * parseInt(e.className.charAt(11)) + parseInt(e.className.charAt(13)) != game.active.board && game.active.board != '*') && (game.board[e.className.charAt(13)][e.className.charAt(11)].data.locations[e.className.charAt(17)][e.className.charAt(15)] != '')))
+		updateActive(e.className.charAt(17), e.className.charAt(15));
 	updateColourEntire();
 }
