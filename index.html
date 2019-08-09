@@ -8,12 +8,35 @@
 				display: inline-block;
 				color: #B0B0B0;
 			}
-			.board.active {
+			table.active .button {
 				color: black;
+				border: 1px solid black;
 			}
-			.board[data-winner]:not([data-winner=""])
-			{
+			table[data-winner]:not([data-winner=""]) {
 				color: #B0B0B0 !important;
+				border: 1px solid #B0B0B0 !important;
+			}
+			
+			table#board > tr > td {
+				width: 135px;
+				height: 135px;
+				color: #B0B0B0;
+			}
+			
+			.button {
+				color: #B0B0B0;
+				border: 1px solid #B0B0B0;
+				width: 45px;
+				height: 45px;
+			}
+			table, tr, td {
+				border: none;
+				border-collapse: collapse;
+				padding: 0;
+				margin: 0;
+			}
+			td {
+				text-align: center;
 			}
 		</style>
 	</head>
@@ -22,7 +45,7 @@
 		<div id="content">
 			<center>
 				<div id="title">Ultimate Tic Tac Toe</div>
-				<pre id="board"></pre>
+				<table id="board"></pre>
 			</center>
 		</div>
 		<div id="footer"><span id="version" style="position:fixed; bottom:0px; left:0px"></span></div>

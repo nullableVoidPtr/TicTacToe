@@ -40,66 +40,32 @@ game.active = {
 	},
 };
 
-// Contains a table of the X and O ascii values
-valueArr = {
-	x: ["______", "      ", "  \\\/  ", "  \/\\  ", "______"],
-	o: ["______", "  __  ", " |  | ", " |__| ", "______"]
-};
-
 onload = function () {
 	//Document Load Trigger
 	
 	//Create Board
 	for (var a = 0; a < game.height; a++) {
+		var row = document.createElement("tr");
 		for (var z = 0; z < game.width; z++) {
-			var board = document.createElement("div");
-			board.className = `board`;
-			console.log(z, a)
-			board.setAttribute("data-x", z);
-			board.setAttribute("data-y", a);
-			document.getElementById("board").appendChild(board);
+			var cell = document.createElement("td");
+			row.appendChild(cell);
+			var board = document.createElement("table");
+			cell.appendChild(board);
 			for (var i = 0; i < 3; i++) {
-				var button = document.createElement("span");
-				button.className = "boardButton";
-				button.setAttribute("data-x", i);
-				button.setAttribute("data-y", 0);
-				button.innerText = "______"
-				board.appendChild(button);
-				board.innerHTML += (i != 2) ? "_" : "<br>";
-			}
-
-			for (var o = 0; o < 3; o++) {
-				for (var i = 0; i < 3; i++) {
-					board.innerHTML += '|';
-					for (var n = 0; n < 3; n++) {
-						var button = document.createElement("span");
-						button.className = "boardButton";
-						button.setAttribute("data-x", n);
-						button.setAttribute("data-y", o);
-						button.innerText = "      ";
-						board.appendChild(button);
-						board.innerHTML += "|";
-					}
-					board.innerHTML += '<br>';
+				var boardRow = document.createElement("tr");
+				board.appendChild(boardRow);
+				for (var j = 0; j < 3; j++) {
+					var boardCell = document.createElement("td");
+					boardCell.classList.add("button");
+					boardRow.appendChild(boardCell);
 				}
-				board.innerHTML += '|';
-				for (var n = 0; n < 3; n++) {
-					var button = document.createElement("span");
-					button.className = "boardButton";
-					button.setAttribute("data-x", n);
-					button.setAttribute("data-y", (o > 1 ? 2 : o + 1));
-					button.innerText = "______";
-					board.appendChild(button);
-					board.innerHTML += "|";
-				}
-				board.innerHTML += '<br>';
 			}
 		}
-		document.getElementById("board").innerHTML += "<br>";
+		document.getElementById("board").appendChild(row);
 	}
 	
 	//Load eventListener
-	[...document.querySelectorAll('.boardButton')].map(x => x.addEventListener("click", buttonOnClick));
+	[...document.querySelectorAll('td.button')].map(x => x.addEventListener("click", buttonOnClick));
 	
 	//Update active board colour
 	updateColourEntire();
@@ -127,9 +93,7 @@ function updateInner(x, y, z, a, value) {
 		return false;
 	
 	game.board[z][a].data.locations[x][y] = value.toLowerCase();
-	[...document.querySelectorAll(`.board[data-x="${z}"][data-y="${a}"] .boardButton[data-x="${x}"][data-y="${y}"]`)].map((button, i) =>
-		button.innerHTML = valueArr[value.toLowerCase()][i]
-	);
+	document.querySelector(`table > tr:nth-child(${a + 1}) > td:nth-child(${z + 1}) > table tr:nth-child(${y + 1}) > td.button:nth-child(${x + 1})`).innerText = value.toLowerCase();
 	return true;
 }
 
@@ -190,12 +154,8 @@ function updateWinnerInner(z, a) {
 	
 	var win = game.board[z][a].data.winner = findWinnerInner(board);
 	if (!!win) {
-		if (win == "x") {
-			document.querySelector(`.board[data-x="${z}"][data-y="${a}"]`).innerHTML = "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|";
-		} else if (win == "o") {
-			document.querySelector(`.board[data-x="${z}"][data-y="${a}"]`).innerHTML = "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|";
-		}
-		document.querySelector(`.board[data-x="${z}"][data-y="${a}"]`).setAttribute("data-winner", win);
+		document.querySelector(`table#board > tr:nth-child(${a + 1}) > td:nth-child(${z + 1})`).innerHTML = win;
+		document.querySelector(`table#board > tr:nth-child(${a + 1}) > td:nth-child(${z + 1})`).setAttribute("data-winner", win);
 		return true;
 	}
 	return false;
@@ -228,10 +188,9 @@ function findWinnerEntire(board) {
  * void updateWinnerEntire()
  */
 function updateWinnerEntire() {
-	if (!!game.winner)
+	if (!!game.winner) return;
 	var board = game.board;
-	game.winner = findWinnerEntire(game.board);
-	if (!!game.winner)
+	if (!!(game.winner = findWinnerEntire(game.board)))
 		alert("Player " + (game.winner == 'x' ? 1 : (game.winner == 'o' ? 2 : 'ERR')) + " has won the game!");
 }
 
@@ -240,10 +199,10 @@ function updateWinnerEntire() {
  */
 function updateColourEntire() {
 	if (game.active.board.wildcard) {	
-		[...document.querySelectorAll('.board')].map(e => e.classList.add("active"));
+		[...document.querySelectorAll('table tr td table')].map(e => e.classList.add("active"));
 	} else {
-		[...document.querySelectorAll('.board')].map(e => e.classList.remove("active"));
-		document.querySelector(`.board[data-x="${game.active.board.x}"][data-y="${game.active.board.y}"]`).classList.add("active");
+		[...document.querySelectorAll('table tr td table')].map(e => e.classList.remove("active"));
+		document.querySelector(`table#board > tr:nth-child(${game.active.board.y + 1}) > td:nth-child(${game.active.board.x + 1}) > table`).classList.add("active");
 	}
 }
 
@@ -252,8 +211,8 @@ function updateColourEntire() {
  * e - The span element this is executed from ('this')
  */
 function buttonOnClick(e) {
-	var entireX = e.target.parentElement.getAttribute("data-x"), entireY = e.target.parentElement.getAttribute("data-y"),
-		innerX = e.target.getAttribute("data-x"), innerY = e.target.getAttribute("data-y");
+	var entireX = e.target.parentElement.parentElement.parentElement.cellIndex, entireY = e.target.parentElement.parentElement.parentElement.parentElement.rowIndex,
+		innerX = e.target.cellIndex, innerY = e.target.parentElement.rowIndex;
 	if (!(game.active.board.x == entireX && game.active.board.y == entireY) && !game.active.board.wildcard)
 		return false;
 	var changed = updateInner(innerX, innerY, entireX, entireY, game.active.symbol);
