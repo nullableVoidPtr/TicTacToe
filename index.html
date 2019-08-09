@@ -3,6 +3,19 @@
 	<head>
 		<title>Ultimate Tic Tac Toe</title>
 		<script src="main.js"></script>
+		<style>
+			.board {
+				display: inline-block;
+				color: #B0B0B0;
+			}
+			.board.active {
+				color: black;
+			}
+			.board[data-winner]:not([data-winner=""])
+			{
+				color: #B0B0B0 !important;
+			}
+		</style>
 	</head>
 	<body>
 		<div id="header"></div>

@@ -53,12 +53,16 @@ onload = function () {
 	for (var a = 0; a < game.height; a++) {
 		for (var z = 0; z < game.width; z++) {
 			var board = document.createElement("div");
-			board.className = `board${z}_${a}`;
-			board.style = "display: inline-block;"
-			
+			board.className = `board`;
+			console.log(z, a)
+			board.setAttribute("data-x", z);
+			board.setAttribute("data-y", a);
+			document.getElementById("board").appendChild(board);
 			for (var i = 0; i < 3; i++) {
 				var button = document.createElement("span");
-				button.className = `boardButton${z}_${a}_${i}_0`;
+				button.className = "boardButton";
+				button.setAttribute("data-x", i);
+				button.setAttribute("data-y", 0);
 				button.innerText = "______"
 				board.appendChild(button);
 				board.innerHTML += (i != 2) ? "_" : "<br>";
@@ -69,7 +73,9 @@ onload = function () {
 					board.innerHTML += '|';
 					for (var n = 0; n < 3; n++) {
 						var button = document.createElement("span");
-						button.className = `boardButton${z}_${a}_${n}_${o}`;
+						button.className = "boardButton";
+						button.setAttribute("data-x", n);
+						button.setAttribute("data-y", o);
 						button.innerText = "      ";
 						board.appendChild(button);
 						board.innerHTML += "|";
@@ -79,12 +85,13 @@ onload = function () {
 				board.innerHTML += '|';
 				for (var n = 0; n < 3; n++) {
 					var button = document.createElement("span");
-					button.className = `boardButton${z}_${a}_${n}_${(o > 1 ? 2 : o + 1)}`;
+					button.className = "boardButton";
+					button.setAttribute("data-x", n);
+					button.setAttribute("data-y", (o > 1 ? 2 : o + 1));
 					button.innerText = "______";
 					board.appendChild(button);
 					board.innerHTML += "|";
 				}
-				document.getElementById("board").appendChild(board);
 				board.innerHTML += '<br>';
 			}
 		}
@@ -92,7 +99,7 @@ onload = function () {
 	}
 	
 	//Load eventListener
-	[...document.querySelectorAll('span[class^="boardButton"]')].map(x => x.addEventListener("click", buttonOnClick));
+	[...document.querySelectorAll('.boardButton')].map(x => x.addEventListener("click", buttonOnClick));
 	
 	//Update active board colour
 	updateColourEntire();
@@ -120,19 +127,21 @@ function updateInner(x, y, z, a, value) {
 		return false;
 	
 	game.board[z][a].data.locations[x][y] = value.toLowerCase();
-	for (var i = 1, buttons = document.querySelectorAll(`.boardButton${z}_${a}_${x}_${y}`); i < 4; i++) {
-		buttons[i].innerHTML = valueArr[value.toLowerCase()][i];
-	}
-	updateActive(x, y);
+	[...document.querySelectorAll(`.board[data-x="${z}"][data-y="${a}"] .boardButton[data-x="${x}"][data-y="${y}"]`)].map((button, i) =>
+		button.innerHTML = valueArr[value.toLowerCase()][i]
+	);
+	return true;
 }
 
 /*
  * void updateActive
  */
 function updateActive(x, y) {
-	game.active.board.x = x;
-	game.active.board.y = y;
-	game.active.board.wildcard = !!game.board[x][y].data.winner;
+	game.active.board = {
+		x: x,
+		y: y,
+		wildcard: !!game.board[x][y].data.winner,
+	};
 }
 
 /*
@@ -182,10 +191,11 @@ function updateWinnerInner(z, a) {
 	var win = game.board[z][a].data.winner = findWinnerInner(board);
 	if (!!win) {
 		if (win == "x") {
-			document.querySelector(`.board${z}_${a}`).innerHTML = "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|";
+			document.querySelector(`.board[data-x="${z}"][data-y="${a}"]`).innerHTML = "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|";
 		} else if (win == "o") {
-			document.querySelector(`.board${z}_${a}`).innerHTML = "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|";
+			document.querySelector(`.board[data-x="${z}"][data-y="${a}"]`).innerHTML = "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|";
 		}
+		document.querySelector(`.board[data-x="${z}"][data-y="${a}"]`).setAttribute("data-winner", win);
 		return true;
 	}
 	return false;
@@ -229,19 +239,11 @@ function updateWinnerEntire() {
  * void updateColourEntire()
  */
 function updateColourEntire() {
-	debugger;
 	if (game.active.board.wildcard) {	
-		[...document.querySelectorAll('div[class ^= "board"]')].map(e => e.style.color = "#000000");
-		debugger;
-		for (var z = 0; z < game.width; z++) {
-			for (var a = 0; a < game.height; a++) {
-				if (!!game.board[z][a].data.winner)
-					document.querySelector(`.board${z}_${a}`).style.color = "#B0B0B0";
-			}
-		}
+		[...document.querySelectorAll('.board')].map(e => e.classList.add("active"));
 	} else {
-		[...document.querySelectorAll('div[class ^= "board"]')].map(e => e.style.color = "#B0B0B0");
-		document.querySelector(`.board${game.active.board.x}_${game.active.board.y}`).style.color = "#000000";
+		[...document.querySelectorAll('.board')].map(e => e.classList.remove("active"));
+		document.querySelector(`.board[data-x="${game.active.board.x}"][data-y="${game.active.board.y}"]`).classList.add("active");
 	}
 }
 
@@ -250,17 +252,13 @@ function updateColourEntire() {
  * e - The span element this is executed from ('this')
  */
 function buttonOnClick(e) {
-	var entireX = e.target.className.charAt(11), entireY = e.target.className.charAt(13),
-		innerX = e.target.className.charAt(15), innerY = e.target.className.charAt(17);
+	var entireX = e.target.parentElement.getAttribute("data-x"), entireY = e.target.parentElement.getAttribute("data-y"),
+		innerX = e.target.getAttribute("data-x"), innerY = e.target.getAttribute("data-y");
 	if (!(game.active.board.x == entireX && game.active.board.y == entireY) && !game.active.board.wildcard)
 		return false;
-	updateInner(innerX, innerY, entireX, entireY, game.active.symbol);
+	var changed = updateInner(innerX, innerY, entireX, entireY, game.active.symbol);
 	game.active.toggle();
 	if (updateWinnerInner(entireX, entireY)) updateWinnerEntire();
-	if (!((!!game.board[entireX][entireY].data.winner) &&
-		(!(game.active.board.x == entireX && game.active.board.y == entireY) && !game.active.board.wildcard) &&
-		(game.board[entireX][entireY].data.locations[innerX][innerY] != ''))) {
-		updateActive(innerX, innerY);
-	}
+	if (changed) updateActive(innerX, innerY);
 	updateColourEntire();
 }
