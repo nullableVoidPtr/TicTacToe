@@ -9,85 +9,90 @@
 /*
  * Contains all data for the game
  */
-game = {};
-game.version = "1.2.1";
-game.winner = "";
-game.board = {};
-game.board.z = 3;
-game.board.a = 3;
-for (var z = 0; z < game.board.z; z++) {
-	game.board[z] = {};
-	for (var a = 0; a < game.board.a; a++) {
-		game.board[z][a] = {};
-		game.board[z][a].data = {};
-		game.board[z][a].data.locations = {};
-		for (var x = 0; x < 3; x++) {
-			game.board[z][a].data.locations[x] = {};
-			for (var y = 0; y < 3; y++) {
-				game.board[z][a].data.locations[x][y] = "";
-			}
-		}
-		game.board[z][a].data.winner = "";
-	}
-}
-game.active = {};
-game.active.symbol = 'x';
-game.active.board = Math.floor(game.board.a / 2) * game.board.z + Math.floor(game.board.z / 2);
-game.active.toggle = function () {
-	if (this.symbol.toLowerCase() == 'x')
-		this.symbol = 'o';
-	else if (this.symbol.toLowerCase() == 'o')
-		this.symbol = 'x';
+game = {
+	version: "1.2.1",
+	winner: "",
+	width: 3,
+	height: 3,
+};
+game.board = Array.from(Array(game.width), () =>
+	Array.from(Array(game.height), () => 
+		({
+			data: {
+				locations: Array.from(Array(3), () => Array.from(Array(3), () => "")),
+				winner: "",
+			},
+		})
+	)
+);
+game.active = {
+	symbol: 'x',
+	board: {
+		wildcard: false,
+		x: Math.floor(game.width / 2),
+		y: Math.floor(game.height / 2),
+	},
+	toggle: () => {
+		if (game.active.symbol.toLowerCase() == 'x')
+			game.active.symbol = 'o';
+		else if (game.active.symbol.toLowerCase() == 'o')
+			game.active.symbol = 'x';
+	},
 };
 
 // Contains a table of the X and O ascii values
-valueArr = {};
-valueArr.x = ["______", "      ", "  \\\/  ", "  \/\\  ", "______"];
-valueArr.o = ["______", "  __  ", " |  | ", " |__| ", "______"];
+valueArr = {
+	x: ["______", "      ", "  \\\/  ", "  \/\\  ", "______"],
+	o: ["______", "  __  ", " |  | ", " |__| ", "______"]
+};
 
 onload = function () {
 	//Document Load Trigger
 	
 	//Create Board
-	for (var a = 0; a < game.board.a; a++) {
-		for (var z = 0; z < game.board.z; z++) {
-			document.getElementById("board").innerHTML += "<div id=\"board" + a + "_" + z + "\" style=\"display: inline-block;\"></div>";
-			var board = "document.getElementById('board" + a + "_" + z + "')";
+	for (var a = 0; a < game.height; a++) {
+		for (var z = 0; z < game.width; z++) {
+			var board = document.createElement("div");
+			board.className = `board${z}_${a}`;
+			board.style = "display: inline-block;"
 			
-			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_0\">______</span>_'");
-			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_1\">______</span>_'");
-			eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_0_2\">______</span><br>'");
-			
+			for (var i = 0; i < 3; i++) {
+				var button = document.createElement("span");
+				button.className = `boardButton${z}_${a}_${i}_0`;
+				button.innerText = "______"
+				board.appendChild(button);
+				board.innerHTML += (i != 2) ? "_" : "<br>";
+			}
+
 			for (var o = 0; o < 3; o++) {
 				for (var i = 0; i < 3; i++) {
-					eval(board + ".innerHTML += '|'");
+					board.innerHTML += '|';
 					for (var n = 0; n < 3; n++) {
-						eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_" + o + "_" + n + "\">      </span>|'");
+						var button = document.createElement("span");
+						button.className = `boardButton${z}_${a}_${n}_${o}`;
+						button.innerText = "      ";
+						board.appendChild(button);
+						board.innerHTML += "|";
 					}
-					eval(board + ".innerHTML += '<br>'");
+					board.innerHTML += '<br>';
 				}
-				eval(board + ".innerHTML += '|'");
+				board.innerHTML += '|';
 				for (var n = 0; n < 3; n++) {
-					eval(board + ".innerHTML += '<span class=\"boardButton" + a + "_" + z + "_" + (o > 1 ? 2 : o + 1) + "_" + n + "\">______</span>|'");
+					var button = document.createElement("span");
+					button.className = `boardButton${z}_${a}_${n}_${(o > 1 ? 2 : o + 1)}`;
+					button.innerText = "______";
+					board.appendChild(button);
+					board.innerHTML += "|";
 				}
-				eval(board + ".innerHTML += '<br>'");
+				document.getElementById("board").appendChild(board);
+				board.innerHTML += '<br>';
 			}
 		}
 		document.getElementById("board").innerHTML += "<br>";
 	}
 	
 	//Load eventListener
-	for (var a = 0; a < game.board.a; a++) {
-		for (var z = 0; z < game.board.z; z++) {
-			for (var y = 0; y < 3; y++) {
-				for (var x = 0; x < 3; x++) {
-					for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
-						buttons[i].addEventListener("click", function(){buttonOnClick(this);});
-					}
-				}
-			}
-		}
-	}
+	[...document.querySelectorAll('span[class^="boardButton"]')].map(x => x.addEventListener("click", buttonOnClick));
 	
 	//Update active board colour
 	updateColourEntire();
@@ -107,15 +112,15 @@ onload = function () {
 function updateInner(x, y, z, a, value) {
 	if (!!game.board[z][a].data.winner)
 		return false;
-	if (game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*')
+	if (!(game.active.board.x == z && game.active.board.y == a) && !game.active.board.wildcard)
 		return false;
 	if (!(value.toLowerCase() == 'x' || value.toLowerCase() == 'o'))
 		return false;
 	if (game.board[z][a].data.locations[x][y] != '')
-			return false;
+		return false;
 	
 	game.board[z][a].data.locations[x][y] = value.toLowerCase();
-	for (var i = 1, buttons = document.getElementsByClassName("boardButton" + a + "_" + z + "_" + y + "_" + x); i < 4; i++) {
+	for (var i = 1, buttons = document.querySelectorAll(`.boardButton${z}_${a}_${x}_${y}`); i < 4; i++) {
 		buttons[i].innerHTML = valueArr[value.toLowerCase()][i];
 	}
 	updateActive(x, y);
@@ -125,27 +130,42 @@ function updateInner(x, y, z, a, value) {
  * void updateActive
  */
 function updateActive(x, y) {
-	game.active.board = 3 * parseInt(y) + parseInt(x);
-	if (!!game.board[x][y].data.winner)
-		game.active.board = '*';
+	game.active.board.x = x;
+	game.active.board.y = y;
+	game.active.board.wildcard = !!game.board[x][y].data.winner;
 }
 
 /*
- * bool same(a, b, ...)
- * a - First value to compare
- * b - Second value to compare
- * ... - ...
+ * bool same(...a)
  * return - If all the values are identical
  * 
  * NB: Values are converted to lowercase before being compared
  */
-function same(a, b) {
-	if (arguments.length < 2)
-		return arguments.length == 1;
-	for (var i = 1; i < arguments.length; i++)
-		if (arguments[0].toLowerCase() != arguments[i].toLowerCase() || !arguments[i])
-			return false;
-	return true;
+function same(...a) {
+	return a.every((current, i, array) => current.toLowerCase() === array[0].toLowerCase()) && !!a[0];
+}
+
+/*
+ * String findWinnerInner(board)
+ * board - The board
+ */
+function findWinnerInner(board) {
+	
+	for (let i = 0; i < 3; i++) {
+		//Vertical
+		if (same(board[i][0], board[i][1], board[i][2]))
+			return board[i][0].toLowerCase();
+	
+		//Horizontal
+		if (same(board[0][i], board[1][i], board[2][i]))
+			return board[0][i].toLowerCase();
+	}
+	//Diagonal
+	if (same(board[0][0], board[1][1], board[2][2]))
+		return board[0][0].toLowerCase();
+	if (same(board[2][0], board[1][1], board[0][2]))
+		return board[2][0].toLowerCase();
+	return "";
 }
 
 /*
@@ -153,38 +173,45 @@ function same(a, b) {
  * z - The z location of the board
  * a - The a location of the board
  */
-function updateWinner(z, a) {
+function updateWinnerInner(z, a) {
 	if (!!game.board[z][a].data.winner)
 		return false;
-	var board = game.board[z][a].data.locations, win = '';
 	
-	//Vertical
-	if (same(board[0][0], board[0][1], board[0][2]))
-		win = board[0][0].toLowerCase();
-	else if (same(board[1][0], board[1][1], board[1][2]))
-		win = board[1][0].toLowerCase();
-	else if (same(board[2][0], board[2][1], board[2][2]))
-		win = board[2][0].toLowerCase();
+	var board = game.board[z][a].data.locations;
 	
-	//Horizontal
-	else if (same(board[0][0], board[1][0], board[2][0]))
-		win = board[0][0].toLowerCase();
-	else if (same(board[0][1], board[1][1], board[2][1]))
-		win = board[0][1].toLowerCase();
-	else if (same(board[0][2], board[1][2], board[2][2]))
-		win = board[0][2].toLowerCase();
-	
-	//Diagonal
-	else if (same(board[0][0], board[1][1], board[2][2]))
-		win = board[0][0].toLowerCase();
-	else if (same(board[2][0], board[1][1], board[0][2]))
-		win = board[2][0].toLowerCase();
-	
-	game.board[z][a].data.winner = win;
+	var win = game.board[z][a].data.winner = findWinnerInner(board);
 	if (!!win) {
-		document.getElementById("board" + a + "_" + z).innerHTML = win == 'x' ? "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|" : (win == 'o' ? "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|" : document.getElementById("board" + a + "_" + z).innerHTML);
-		//alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won board " + (game.board.z * parseInt(a) + parseInt(z)) + "!");
+		if (win == "x") {
+			document.querySelector(`.board${z}_${a}`).innerHTML = "____________________<br>|                    |<br>|     \\        /     |<br>|      \\      /      |<br>|       \\    /       |<br>|        \\  /        |<br>|         \\/         |<br>|         /\\         |<br>|        /  \\        |<br>|       /    \\       |<br>|      /      \\      |<br>|     /        \\     |<br>|____________________|";
+		} else if (win == "o") {
+			document.querySelector(`.board${z}_${a}`).innerHTML = "____________________<br>|    ____________    |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |            |   |<br>|   |____________|   |<br>|____________________|";
+		}
+		return true;
 	}
+	return false;
+}
+
+/*
+ * String findWinnerEntire(board)
+ * board - The board
+ */
+function findWinnerEntire(board) {
+	
+	for (var i = 0; i < 3; i++) {
+		//Vertical
+		if (same(board[i][0].data.winner, board[i][1].data.winner, board[i][2].data.winner))
+			return board[i][0].data.winner.toLowerCase();
+	
+		//Horizontal
+		if (same(board[0][i].data.winner, board[1][i].data.winner, board[2][i].data.winner))
+			return board[0][i].data.winner.toLowerCase();
+	}
+	//Diagonal
+	if (same(board[0][0].data.winner, board[1][1].data.winner, board[2][2].data.winner))
+		return board[0][0].data.winner.toLowerCase();
+	if (same(board[2][0].data.winner, board[1][1].data.winner, board[0][2].data.winner))
+		return board[2][0].data.winner.toLowerCase();
+	return "";
 }
 
 /*
@@ -192,48 +219,29 @@ function updateWinner(z, a) {
  */
 function updateWinnerEntire() {
 	if (!!game.winner)
-		return false;
-	var board = game.board, win = '';
-	
-	//Vertical
-	if (same(board[0][0].data.winner, board[0][1].data.winner, board[0][2].data.winner))
-		win = board[0][0].data.winner;
-	else if (same(board[1][0].data.winner, board[1][1].data.winner, board[1][2].data.winner))
-		win = board[1][0].data.winner;
-	else if (same(board[2][0].data.winner, board[2][1].data.winner, board[2][2].data.winner))
-		win = board[2][0].data.winner;
-	
-	//Horizontal
-	else if (same(board[0][0].data.winner, board[1][0].data.winner, board[2][0].data.winner))
-		win = board[0][0].data.winner;
-	else if (same(board[0][1].data.winner, board[1][1].data.winner, board[2][1].data.winner))
-		win = board[0][1].data.winner;
-	else if (same(board[0][2].data.winner, board[1][2].data.winner, board[2][2].data.winner))
-		win = board[0][2].data.winner;
-	
-	//Diagonal
-	else if (same(board[0][0].data.winner, board[1][1].data.winner, board[2][2].data.winner))
-		win = board[0][0].data.winner;
-	else if (same(board[2][0].data.winner, board[1][1].data.winner, board[0][2].data.winner))
-		win = board[2][0].data.winner;
-	
-	win = win.toLowerCase();
-	game.winner = win;
-	if (!!win)
-		alert("Player " + (win == 'x' ? 1 : (win == 'o' ? 2 : 'ERR')) + " has won the game!");
+	var board = game.board;
+	game.winner = findWinnerEntire(game.board);
+	if (!!game.winner)
+		alert("Player " + (game.winner == 'x' ? 1 : (game.winner == 'o' ? 2 : 'ERR')) + " has won the game!");
 }
 
 /*
  * void updateColourEntire()
  */
 function updateColourEntire() {
-	for (var z = 0; z < game.board.z; z++) {
-		for (var a = 0; a < game.board.a; a++) {
-			if ((game.board.z * parseInt(a) + parseInt(z) != game.active.board && game.active.board != '*') || (game.active.board == '*' && !!game.board[z][a].data.winner))
-				document.getElementById("board" + a + "_" + z).style.color = "#B0B0B0";
-			else if (game.board.z * parseInt(a) + parseInt(z) == game.active.board || game.active.board == '*')
-				document.getElementById("board" + a + "_" + z).style.color = "#000000";
+	debugger;
+	if (game.active.board.wildcard) {	
+		[...document.querySelectorAll('div[class ^= "board"]')].map(e => e.style.color = "#000000");
+		debugger;
+		for (var z = 0; z < game.width; z++) {
+			for (var a = 0; a < game.height; a++) {
+				if (!!game.board[z][a].data.winner)
+					document.querySelector(`.board${z}_${a}`).style.color = "#B0B0B0";
+			}
 		}
+	} else {
+		[...document.querySelectorAll('div[class ^= "board"]')].map(e => e.style.color = "#B0B0B0");
+		document.querySelector(`.board${game.active.board.x}_${game.active.board.y}`).style.color = "#000000";
 	}
 }
 
@@ -242,13 +250,17 @@ function updateColourEntire() {
  * e - The span element this is executed from ('this')
  */
 function buttonOnClick(e) {
-	if (game.board.z * parseInt(e.className.charAt(11)) + parseInt(e.className.charAt(13)) != game.active.board && game.active.board != '*')
+	var entireX = e.target.className.charAt(11), entireY = e.target.className.charAt(13),
+		innerX = e.target.className.charAt(15), innerY = e.target.className.charAt(17);
+	if (!(game.active.board.x == entireX && game.active.board.y == entireY) && !game.active.board.wildcard)
 		return false;
-	updateInner(e.className.charAt(17), e.className.charAt(15), e.className.charAt(13), e.className.charAt(11), game.active.symbol);
+	updateInner(innerX, innerY, entireX, entireY, game.active.symbol);
 	game.active.toggle();
-	updateWinner(e.className.charAt(13), e.className.charAt(11));
-	updateWinnerEntire();
-	if (!((!!game.board[e.className.charAt(13)][e.className.charAt(11)].data.winner) && (game.board.z * parseInt(e.className.charAt(11)) + parseInt(e.className.charAt(13)) != game.active.board && game.active.board != '*') && (game.board[e.className.charAt(13)][e.className.charAt(11)].data.locations[e.className.charAt(17)][e.className.charAt(15)] != '')))
-		updateActive(e.className.charAt(17), e.className.charAt(15));
+	if (updateWinnerInner(entireX, entireY)) updateWinnerEntire();
+	if (!((!!game.board[entireX][entireY].data.winner) &&
+		(!(game.active.board.x == entireX && game.active.board.y == entireY) && !game.active.board.wildcard) &&
+		(game.board[entireX][entireY].data.locations[innerX][innerY] != ''))) {
+		updateActive(innerX, innerY);
+	}
 	updateColourEntire();
 }
